@@ -97,6 +97,11 @@ for i_subpad in range(1,num_variables):                 # NB: the last variable 
         plt.xlabel(name_var,fontsize=11)                # equivalent to s_pad.set_xlabel
         plt.ylabel("entries",fontsize=11)               # equivalent to s_pad.set_ylabel
         plt.yscale('log')
+        #####################################################################################################
+        #       In this way the following dictionary is produced:                                           #
+        #       {'alpha': 0.3, 'density': True, 'bins': 100}                                                #
+        #       This is  a dictionary used to pass to the function some values as key-word parameters       #
+        #####################################################################################################
         kwargs = dict(alpha=0.3,density=True, bins=100)
         n, bins, patches = plt.hist(train_set_sig[name_var], facecolor='r', label='signal', **kwargs)           # NB: this function returns MORE THAN ONE ARGUMENT
         n, bins, patches = plt.hist(train_set_bkg[name_var], facecolor='b', label='background', **kwargs)
@@ -111,6 +116,8 @@ path_Sig = "./Signal"
 path_Bkg = "./Background"
 CheckDir(path_Sig)
 CheckDir(path_Bkg)
+
+print("\n\n==================\n   kwargs: %s\n=================="%kwargs)
 
 '''
 # ------------------------------------------
