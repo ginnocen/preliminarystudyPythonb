@@ -32,11 +32,26 @@ def ProgressBar(part,tot):
                 print("-",end='')
         print("] {0:.0%}".format(perc),end='')
 #__________________________________________________________________________________
+def DoCorrMatrix(dataframe,number,string,c_type):
+        figCorr = plt.figure(num=number,figsize=(15,15))
+        figCorr.suptitle("%s correlation - %s"%(c_type,string),fontsize=40)
+        padcorr = plt.subplot(1,1,1)
+        axis = padcorr.matshow(dataframe.corr(c_type))
+        figCorr.colorbar(axis)
+        padcorr.xaxis.set_ticks(range(0,len(dataframe.columns)))
+        padcorr.yaxis.set_ticks(range(0,len(dataframe.columns)))
+        padcorr.xaxis.set_ticks_position('bottom')
+        padcorr.set_xticklabels(['']+dataframe.columns,rotation=90)#,fontsize='x-small')
+        padcorr.set_yticklabels(['']+dataframe.columns)#,fontsize='x-small')
+        plt.savefig("CorrMatrix%s_%s.pdf"%(c_type,string))
+#__________________________________________________________________________________
 
 time0 = datetime.now()
           
 # variable list (NB: this is a sub-sample of variables stored in the DataFrame inside "testsample.pkl")  
-mylistvariables=['d_len_xy_ML','norm_dl_xy_ML','cos_p_ML','cos_p_xy_ML','imp_par_xy_ML','sig_vert_ML',"delta_mass_KK_ML",'cos_PiDs_ML',"cos_PiKPhi_3_ML"]       
+# ===== variables to be checked for correlations =====
+mylistvariables=['d_len_xy_ML','norm_dl_xy_ML','cos_p_ML','cos_p_xy_ML','imp_par_xy_ML','sig_vert_ML',"delta_mass_KK_ML",'cos_PiDs_ML',"cos_PiKPhi_3_ML"]    
+   
 train_set = pd.read_pickle("testsample.pkl")    # load objects stored in the file specified in the path 
 
 print("\n - train_set data type:%s \n"% type(train_set))     # train_set is a pandas DataFrame
@@ -117,6 +132,7 @@ path_Bkg = "./Background"
 CheckDir(path_Sig)
 CheckDir(path_Bkg)
 
+
 print("\n\n==================\n   kwargs: %s\n=================="%kwargs)
 
 '''
@@ -163,23 +179,56 @@ print("\n==================================")
 print("\tScatter plots")
 print("==================================\n")
 
-for i_col in range(1,num_variables):
-        namex = train_set_sig.columns[i_col-1]        
+print("--- Different coefficients:")
+print("\nPEARSON (signal):")
+print(train_set_sig.corr('pearson'))
+print("\nKENDALL (signal):")
+print(train_set_sig.corr('kendall'))
+print("\nSPEARMAN (signal):")
+print(train_set_sig.corr('spearman'))
+
+# --- correlation matrix SIGNAL ---
+
+c_type = 'pearson'
+#c_type = 'kendall'
+#c_type = 'spearman'
+DoCorrMatrix(train_set_sig,100,"signal",c_type)
+DoCorrMatrix(train_set_bkg,101,"background",c_type)
+'''
+figCorr_sig = plt.figure(num=100,figsize=(15,15))
+figCorr_sig.suptitle("%s correlation - signal"%c_type,fontsize=40)
+padcorr_sig = plt.subplot(1,1,1)
+axis_sig = padcorr_sig.matshow(train_set_sig.corr(c_type))
+figCorr_sig.colorbar(axis_sig)
+padcorr_sig.xaxis.set_ticks(range(0,len(train_set_sig.columns)))
+padcorr_sig.yaxis.set_ticks(range(0,len(train_set_sig.columns)))
+padcorr_sig.xaxis.set_ticks_position('bottom')
+padcorr_sig.set_xticklabels(['']+train_set_sig.columns,rotation=90)
+padcorr_sig.set_yticklabels(['']+train_set_sig.columns)
+plt.savefig("corrmatrix_sig.png")
+'''
+
+#plt.show()
+
+num_variables_corr = len(mylistvariables)
+for i_col in range(1,num_variables_corr):
+        #namex = train_set_sig.columns[i_col-1] 
+        namex = mylistvariables[i_col-1]              
 
         index_plot_sig = 1+i_col                # signal plots 
-        index_plot_bkg = 1+i_col+num_variables  # background plots
+        index_plot_bkg = 1+i_col+num_variables_corr  # background plots
 
-        fig_scPlot     = plt.figure(num=index_plot_sig,figsize=(16,9))       # signal        
+        fig_scPlot     = plt.figure(num=index_plot_sig,figsize=(18,15))       # signal        
         fig_scPlot.suptitle("Scatter plot SIGNAL %s"%namex,fontsize=40)
-        fig_scPlot_BKG = plt.figure(num=index_plot_bkg,figsize=(16,9))       # background    
+        fig_scPlot_BKG = plt.figure(num=index_plot_bkg,figsize=(18,15))       # background    
         fig_scPlot_BKG.suptitle("Scatter plot BACKGROUND %s"%namex,fontsize=40)    
 
-        for i_col2 in range(1,num_variables):               
-                namey = train_set_sig.columns[i_col2-1]
+        for i_col2 in range(1,num_variables_corr):               
+                namey = mylistvariables[i_col2-1]
 
                 plt.figure(index_plot_sig)   # moving to figure 1 (signal)
-                s_pad_scPlot = plt.subplot(4,3,i_col2)
-                plt.scatter(train_set_sig[namex],train_set_sig[namey],s=1,c="red",marker=",")
+                s_pad_scPlot = plt.subplot(3,3,i_col2)
+                plt.scatter(train_set_sig[namex],train_set_sig[namey],s=3,c="red",marker="o",alpha=0.3)
                 # ----- correlation coefficient -----
                 ndarray_corr_sig = np.corrcoef(train_set_sig[namex],train_set_sig[namey])
                 #print("\n=== Correlation %s vs. %s \n\tCorrelation coefficient matrix SIGNAL: \n%s"%(namex,namey,ndarray_corr_sig))  
@@ -187,13 +236,13 @@ for i_col in range(1,num_variables):
                 # -----------------------------------
                 s_pad_scPlot.set_xlabel(namex)
                 s_pad_scPlot.set_ylabel(namey)
-                plt.subplots_adjust(wspace=0.5, hspace=0.75)
-                plt.grid()
-                plt.savefig(path_Sig+"/scatter_SIG_%d.png"%i_col)
+                plt.subplots_adjust(wspace=0.25, hspace=0.3)
+                plt.savefig(path_Sig+"/scatter_SIG_%d.png"%i_col, bbox_inches="tight")
+                #plt.clf()
 
                 plt.figure(index_plot_bkg)   # moving to figure 1 (background)
-                fig_scPlot_BKG = plt.subplot(4,3,i_col2)
-                plt.scatter(train_set_bkg[namex],train_set_bkg[namey],s=1,c="blue",marker=",")
+                fig_scPlot_BKG = plt.subplot(3,3,i_col2)
+                plt.scatter(train_set_bkg[namex],train_set_bkg[namey],s=3,c="blue",marker="o",alpha=0.3)
                 # ----- correlation coefficient -----
                 ndarray_corr_bkg = np.corrcoef(train_set_bkg[namex],train_set_bkg[namey])
                 #print("\tCorrelation coefficient matrix BACKGROUND: \n%s"%ndarray_corr_bkg)  
@@ -201,11 +250,11 @@ for i_col in range(1,num_variables):
                 # -----------------------------------
                 fig_scPlot_BKG.set_xlabel(namex)
                 fig_scPlot_BKG.set_ylabel(namey)
-                plt.subplots_adjust(wspace=0.5, hspace=0.75)
-                plt.grid()
-                plt.savefig(path_Bkg+"/scatter_BKG_%d.png"%i_col)
-                ProgressBar((i_col-1)*(num_variables-1)+i_col2,(num_variables-1)**2)
-
+                plt.subplots_adjust(wspace=0.25, hspace=0.3)
+                plt.savefig(path_Bkg+"/scatter_BKG_%d.png"%i_col, bbox_inches="tight")
+                ProgressBar((i_col-1)*(num_variables_corr-1)+i_col2,(num_variables_corr-1)**2)
+                #plt.clf()
+                #plt.show()
 #plt.show()      # after calling 'show', the current plot and axis are destroyed (namely: calling plt.savefig you do not save anything!) ---> all the plots produced in the program are plotted all together!
 
 time1 = datetime.now()
