@@ -12,6 +12,8 @@ from timeit import default_timer as timer
 from datetime import datetime
 #from ROOT import TNtuple
 #from ROOT import TH1F, TH2F, TCanvas, TFile, gStyle, gROOT
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 
 #__________________________________________________________________________________
 def CheckDir(path):
@@ -32,7 +34,7 @@ def ProgressBar(part,tot):
                 print("-",end='')
         print("] {0:.0%}".format(perc),end='')
 #__________________________________________________________________________________
-def DoCorrMatrix(dataframe,number,string,c_type):
+def DoCorrMatrix(dataframe,number,string,c_type="pearson"):
         figCorr = plt.figure(num=number,figsize=(15,15))
         figCorr.suptitle("%s correlation - %s"%(c_type,string),fontsize=40)
         padcorr = plt.subplot(1,1,1)
@@ -41,12 +43,115 @@ def DoCorrMatrix(dataframe,number,string,c_type):
         padcorr.xaxis.set_ticks(range(0,len(dataframe.columns)))
         padcorr.yaxis.set_ticks(range(0,len(dataframe.columns)))
         padcorr.xaxis.set_ticks_position('bottom')
-        padcorr.set_xticklabels(['']+dataframe.columns,rotation=90)#,fontsize='x-small')
+        padcorr.set_xticklabels(['']+dataframe.columns,rotation=45)#,fontsize='x-small')
         padcorr.set_yticklabels(['']+dataframe.columns)#,fontsize='x-small')
         plt.savefig("CorrMatrix%s_%s.pdf"%(c_type,string))
 #__________________________________________________________________________________
+def DimReduction(dataframe,varlist,n_pca,n_cases,name,dohistbool=True):
+
+        data        = dataframe.loc[:,varlist]                          # get the dataframe with only the variables in 'varlist' 
+        data_values = data.values                                       # get only the values
+        data_values = StandardScaler().fit_transform(data_values)       # standardize all the values: gaussian distibution with mean=0 and sigma=1
+
+        pca = PCA(n_pca)                                                # define the PCA object
+        principalComponent = pca.fit_transform(data_values)
+        
+        pca_name_list = []
+        for i_pca in range(1,n_pca+1):
+                pca_name_list.append("Princ. comp. %d"%i_pca)
+
+        pca_dataframe = pd.DataFrame(data=principalComponent,columns=pca_name_list)
+        print(pca_dataframe.head(10))
+
+        # do scatter plots on principal components
+        pcaScatterFig = plt.figure(figsize=(15,15))
+        pcaScatterFig.suptitle("Dim. reduction %s - %d principal components"%(name,n_pca),fontsize=40)
+        index = 1
+        rowscols = GetRowCol(n_cases)
+        rows = rowscols[0]
+        cols = rowscols[1]
+        for i_col in range(1,n_pca+1):
+                namex = pca_dataframe.columns[i_col-1]
+                for i_col2 in range(1,n_pca+1):
+                        if i_col2>i_col:
+                                namey = pca_dataframe.columns[i_col2-1]
+                                padSc = plt.subplot(rows,cols,index)
+                                color=""
+                                if name=="Signal":
+                                        color+="red"
+                                elif name=="Background":
+                                        color="blue"
+                                plt.scatter(pca_dataframe[namex],pca_dataframe[namey],s=3,c=color,marker="o",alpha=0.3)
+                                padSc.set_xlabel(namex)
+                                padSc.set_ylabel(namey)
+                                index += 1
+                                #padSc.set_title("Pearson corr. %f"%np.corrcoef(pca_dataframe[namex],pca_dataframe[namey])[0,1])
+                        else:
+                                continue
+        plt.subplots_adjust(hspace=0.75,wspace=0.75)
+        #plt.show()
+        '''
+        path="./%s/PCA"%name
+        CheckDir(path)
+        plt.savefig(path+"/%d.pdf"%n_pca, bbox_inches="tight")   
+        '''     
+        print("\n--- ",pca.explained_variance_ratio_)
+        if dohistbool>0:
+                DoCorrMatrix(pca_dataframe,None,"pca_%s"%name)
+                DoHist(pca.explained_variance_ratio_,name)
+        #plt.show()
+#__________________________________________________________________________________
+def DoHist(array,name):
+        figVarRat = plt.figure(figsize=(15,15))
+        figVarRat.suptitle(name,fontsize=40)
+        pad = plt.subplot(1,1,1)
+        position = range(1,len(array)+1)
+        col=""
+        if name=="Signal":
+                col+="red"
+        elif name=="Background":
+                col="blue"
+        plt.bar(position,array,color=col)
+        pad.set_xlabel("principal component")
+        pad.set_ylabel("explained variance ratio")
+#__________________________________________________________________________________
+def GetRowCol(N):
+        rowcol = []
+        row = int(math.sqrt(N))
+        col = N//row
+        if N%row>0:
+                col += 1
+        rowcol.append(row)
+        rowcol.append(col)
+        return rowcol
+#__________________________________________________________________________________
+def factorial(n):
+        m = n-1
+        result = n
+        while m>1:
+                result *= m
+                m -= 1
+        if n<2:
+                result = 1
+        return result
+#__________________________________________________________________________________
+def NComb(n):
+        return factorial(n)//( factorial(2)*factorial(n-2) )
+#__________________________________________________________________________________
+
+
 
 time0 = datetime.now()
+
+# ----- input parameters management -----
+print("===========================================================================")
+print("\tCode started at ",time0.strftime('%d/%m/%Y, %H:%M:%S'))
+print("\tList of arguments: ",str(sys.argv))
+print("===========================================================================\n")
+SaveScatterPlots = sys.argv[1]
+print(SaveScatterPlots)
+# ---------------------------------------
+
           
 # variable list (NB: this is a sub-sample of variables stored in the DataFrame inside "testsample.pkl")  
 # ===== variables to be checked for correlations =====
@@ -210,52 +315,67 @@ plt.savefig("corrmatrix_sig.png")
 
 #plt.show()
 
-num_variables_corr = len(mylistvariables)
-for i_col in range(1,num_variables_corr):
-        #namex = train_set_sig.columns[i_col-1] 
-        namex = mylistvariables[i_col-1]              
+if SaveScatterPlots == "True":
+        num_variables_corr = len(mylistvariables)
+        for i_col in range(1,num_variables_corr):
+                #namex = train_set_sig.columns[i_col-1] 
+                namex = mylistvariables[i_col-1]              
 
-        index_plot_sig = 1+i_col                # signal plots 
-        index_plot_bkg = 1+i_col+num_variables_corr  # background plots
+                index_plot_sig = 1+i_col                # signal plots 
+                index_plot_bkg = 1+i_col+num_variables_corr  # background plots
 
-        fig_scPlot     = plt.figure(num=index_plot_sig,figsize=(18,15))       # signal        
-        fig_scPlot.suptitle("Scatter plot SIGNAL %s"%namex,fontsize=40)
-        fig_scPlot_BKG = plt.figure(num=index_plot_bkg,figsize=(18,15))       # background    
-        fig_scPlot_BKG.suptitle("Scatter plot BACKGROUND %s"%namex,fontsize=40)    
+                fig_scPlot     = plt.figure(num=index_plot_sig,figsize=(18,15))       # signal        
+                fig_scPlot.suptitle("Scatter plot SIGNAL %s"%namex,fontsize=40)
+                fig_scPlot_BKG = plt.figure(num=index_plot_bkg,figsize=(18,15))       # background    
+                fig_scPlot_BKG.suptitle("Scatter plot BACKGROUND %s"%namex,fontsize=40)    
 
-        for i_col2 in range(1,num_variables_corr):               
-                namey = mylistvariables[i_col2-1]
+                for i_col2 in range(1,num_variables_corr):               
+                        namey = mylistvariables[i_col2-1]
 
-                plt.figure(index_plot_sig)   # moving to figure 1 (signal)
-                s_pad_scPlot = plt.subplot(3,3,i_col2)
-                plt.scatter(train_set_sig[namex],train_set_sig[namey],s=3,c="red",marker="o",alpha=0.3)
-                # ----- correlation coefficient -----
-                ndarray_corr_sig = np.corrcoef(train_set_sig[namex],train_set_sig[namey])
-                #print("\n=== Correlation %s vs. %s \n\tCorrelation coefficient matrix SIGNAL: \n%s"%(namex,namey,ndarray_corr_sig))  
-                s_pad_scPlot.set_title("Correlation coefficient: %.4f"%ndarray_corr_sig[0,1])
-                # -----------------------------------
-                s_pad_scPlot.set_xlabel(namex)
-                s_pad_scPlot.set_ylabel(namey)
-                plt.subplots_adjust(wspace=0.25, hspace=0.3)
-                plt.savefig(path_Sig+"/scatter_SIG_%d.png"%i_col, bbox_inches="tight")
-                #plt.clf()
+                        plt.figure(index_plot_sig)   # moving to figure 1 (signal)
+                        s_pad_scPlot = plt.subplot(3,3,i_col2)
+                        plt.scatter(train_set_sig[namex],train_set_sig[namey],s=3,c="red",marker="o",alpha=0.3)
+                        # ----- correlation coefficient -----
+                        ndarray_corr_sig = np.corrcoef(train_set_sig[namex],train_set_sig[namey])
+                        #print("\n=== Correlation %s vs. %s \n\tCorrelation coefficient matrix SIGNAL: \n%s"%(namex,namey,ndarray_corr_sig))  
+                        s_pad_scPlot.set_title("Correlation coefficient: %.4f"%ndarray_corr_sig[0,1])
+                        # -----------------------------------
+                        s_pad_scPlot.set_xlabel(namex)
+                        s_pad_scPlot.set_ylabel(namey)
+                        plt.subplots_adjust(wspace=0.25, hspace=0.3)
+                        plt.savefig(path_Sig+"/scatter_SIG_%d.png"%i_col, bbox_inches="tight")
 
-                plt.figure(index_plot_bkg)   # moving to figure 1 (background)
-                fig_scPlot_BKG = plt.subplot(3,3,i_col2)
-                plt.scatter(train_set_bkg[namex],train_set_bkg[namey],s=3,c="blue",marker="o",alpha=0.3)
-                # ----- correlation coefficient -----
-                ndarray_corr_bkg = np.corrcoef(train_set_bkg[namex],train_set_bkg[namey])
-                #print("\tCorrelation coefficient matrix BACKGROUND: \n%s"%ndarray_corr_bkg)  
-                fig_scPlot_BKG.set_title("Correlation coefficient: %.4f"%ndarray_corr_bkg[0,1])
-                # -----------------------------------
-                fig_scPlot_BKG.set_xlabel(namex)
-                fig_scPlot_BKG.set_ylabel(namey)
-                plt.subplots_adjust(wspace=0.25, hspace=0.3)
-                plt.savefig(path_Bkg+"/scatter_BKG_%d.png"%i_col, bbox_inches="tight")
-                ProgressBar((i_col-1)*(num_variables_corr-1)+i_col2,(num_variables_corr-1)**2)
-                #plt.clf()
-                #plt.show()
+                        plt.figure(index_plot_bkg)   # moving to figure 1 (background)
+                        fig_scPlot_BKG = plt.subplot(3,3,i_col2)
+                        plt.scatter(train_set_bkg[namex],train_set_bkg[namey],s=3,c="blue",marker="o",alpha=0.3)
+                        # ----- correlation coefficient -----
+                        ndarray_corr_bkg = np.corrcoef(train_set_bkg[namex],train_set_bkg[namey])
+                        #print("\tCorrelation coefficient matrix BACKGROUND: \n%s"%ndarray_corr_bkg)  
+                        fig_scPlot_BKG.set_title("Correlation coefficient: %.4f"%ndarray_corr_bkg[0,1])
+                        # -----------------------------------
+                        fig_scPlot_BKG.set_xlabel(namex)
+                        fig_scPlot_BKG.set_ylabel(namey)
+                        plt.subplots_adjust(wspace=0.25, hspace=0.3)
+                        plt.savefig(path_Bkg+"/scatter_BKG_%d.png"%i_col, bbox_inches="tight")
+                        ProgressBar((i_col-1)*(num_variables_corr-1)+i_col2,(num_variables_corr-1)**2)
+                        #plt.show()
 #plt.show()      # after calling 'show', the current plot and axis are destroyed (namely: calling plt.savefig you do not save anything!) ---> all the plots produced in the program are plotted all together!
+'''
+maxN = len(mylistvariables)
+for n_pc in range(2,maxN+1):
+        dohistboolean = 1
+        if n_pc<maxN:
+                dohistboolean = 0
+        print("\n\n\n========= n_pc %s   dohistboolean %s"%(n_pc,dohistboolean))
+        DimReduction(train_set_sig,mylistvariables,n_pc,NComb(n_pc),"Signal",dohistboolean)
+        DimReduction(train_set_bkg,mylistvariables,n_pc,NComb(n_pc),"Background",dohistboolean)
+'''
+DimReduction(train_set_sig,mylistvariables,len(mylistvariables),NComb(len(mylistvariables)),"Signal")
+DimReduction(train_set_bkg,mylistvariables,len(mylistvariables),NComb(len(mylistvariables)),"Background")
+
+plt.show()
+
+
 
 time1 = datetime.now()
 howmuchtime = time1-time0
