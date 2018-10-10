@@ -90,11 +90,11 @@ def DimReduction(dataframe,varlist,n_pca,n_cases,name,dohistbool=True):
                                 continue
         plt.subplots_adjust(hspace=0.75,wspace=0.75)
         #plt.show()
-        '''
+        
         path="./%s/PCA"%name
         CheckDir(path)
-        plt.savefig(path+"/%d.pdf"%n_pca, bbox_inches="tight")   
-        '''     
+        plt.savefig(path+"/%d.png"%n_pca, bbox_inches="tight")   
+             
         print("\n--- ",pca.explained_variance_ratio_)
         if dohistbool>0:
                 DoCorrMatrix(pca_dataframe,None,"pca_%s"%name)
@@ -112,8 +112,11 @@ def DoHist(array,name):
         elif name=="Background":
                 col="blue"
         plt.bar(position,array,color=col)
-        pad.set_xlabel("principal component")
-        pad.set_ylabel("explained variance ratio")
+        pad.set_xlabel("principal component",fontsize=20)
+        pad.set_ylabel("explained variance ratio",fontsize=20)
+        pad.set_ylim(0,0.3)
+        pad.get_xaxis().set_tick_params(labelsize=20)
+        pad.get_yaxis().set_tick_params(labelsize=20)
 #__________________________________________________________________________________
 def GetRowCol(N):
         rowcol = []
