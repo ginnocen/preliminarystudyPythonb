@@ -2,5 +2,6 @@
         How to run this code
 =========================================
 To run this code, give the following parameters:
+        - path of the file to be read
         - True/False if you want/do not want to produce scatter plots for default variables
         - pass a number, corresponding to the number of principal components you want to reduce the system to

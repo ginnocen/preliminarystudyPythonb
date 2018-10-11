@@ -15,15 +15,16 @@ from datetime import datetime
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
-import Functions as func     # user defined functions
-
+import Functions as func                # user defined functions
+import D_mesons_variables as Dvars      # D mesons variables
 
 
 
 
 time0 = datetime.now()
-SaveScatterPlots = sys.argv[1]
-n_pca_variables  = int(sys.argv[2])
+filename         = sys.argv[1]
+SaveScatterPlots = sys.argv[2]
+n_pca_variables  = int(sys.argv[3])
 
 # check if there are the directories where to save the files, otherwise create them
 path_Sig = "./Signal"
@@ -32,8 +33,11 @@ func.CheckDir(path_Sig)
 func.CheckDir(path_Bkg)
 
 # ===== variables to be checked for correlations =====
-mylistvariables=['d_len_xy_ML','norm_dl_xy_ML','cos_p_ML','cos_p_xy_ML','imp_par_xy_ML','sig_vert_ML',"delta_mass_KK_ML",'cos_PiDs_ML',"cos_PiKPhi_3_ML"]      
-train_set = pd.read_pickle("../testsample.pkl")                    # load objects stored in the file specified in the path ---> it is a DataFrame
+#mylistvariables=['d_len_xy_ML','norm_dl_xy_ML','cos_p_ML','cos_p_xy_ML','imp_par_xy_ML','sig_vert_ML',"delta_mass_KK_ML",'cos_PiDs_ML',"cos_PiKPhi_3_ML"] 
+mylistvariables = Dvars.D_dictionary["Ds"]   
+#train_set = pd.read_pickle("../testsample.pkl")                    # load objects stored in the file specified in the path ---> it is a DataFrame
+train_set = pd.read_pickle(filename)                            # load objects stored in the file specified in the path ---> it is a DataFrame
+print("\n=== Opened file: ",filename)
 train_set_sig=train_set.loc[train_set['signal_ML'] == 1]        # .loc function used to return a DataFrame with all the info about the entries satisfying the condition in brackets     
 train_set_bkg=train_set.loc[train_set['signal_ML'] == 0]
 
