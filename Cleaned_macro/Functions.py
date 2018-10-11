@@ -25,7 +25,7 @@ def CheckDir(path):
                 os.makedirs(path)
 #__________________________________________________________________________________
 def ProgressBar(part,tot):
-        sys.stdout.flush()      # deletes what dumped in the line
+        sys.stdout.flush()      
         length=100
         perc = part/tot
         num_dashes = int(length*perc)
@@ -51,8 +51,7 @@ def DoCorrMatrix(dataframe,number,string,path,c_type="pearson"):
         padcorr.set_yticklabels(['']+dataframe.columns)
         plt.savefig("%s/CorrMatrix%s_%s.pdf"%(path,c_type,string))
 #__________________________________________________________________________________
-def DimReduction(dataframe,varlist,n_pca,n_cases,name,dohistbool=True):
-
+def GetPCADataFrame(dataframe,varlist,n_pca):
         data        = dataframe.loc[:,varlist]                          # get the dataframe with only the variables in 'varlist' 
         data_values = data.values                                       # get only the values
         data_values = StandardScaler().fit_transform(data_values)       # standardize all the values: gaussian distibution with mean=0 and sigma=1
@@ -65,60 +64,64 @@ def DimReduction(dataframe,varlist,n_pca,n_cases,name,dohistbool=True):
                 pca_name_list.append("Princ. comp. %d"%i_pca)
 
         pca_dataframe = pd.DataFrame(data=principalComponent,columns=pca_name_list)
+        return (pca_dataframe,pca)
+#__________________________________________________________________________________
+def DimReduction(dataframe_sig,dataframe_bkg,varlist,n_pca,n_cases,dohistbool=True):
+
+        Sig_pca_stuff = GetPCADataFrame(dataframe_sig,varlist,n_pca)
+        Bkg_pca_stuff = GetPCADataFrame(dataframe_bkg,varlist,n_pca)
+        pca_dataframe_sig = Sig_pca_stuff[0]
+        pca_dataframe_bkg = Bkg_pca_stuff[0]
 
         # do scatter plots on principal components
-        pcaScatterFig = plt.figure(figsize=(15,15))
-        pcaScatterFig.suptitle("Dim. reduction %s - %d principal components"%(name,n_pca),fontsize=40)
+        pcaScatterFig = plt.figure(figsize=(40,40))
+        pcaScatterFig.suptitle("Dim. reduction  - %d principal components"%n_pca,fontsize=75,)
         index = 1
         rowscols = GetRowCol(n_cases)
         rows = rowscols[0]
         cols = rowscols[1]
         for i_col in range(1,n_pca+1):
-                namex = pca_dataframe.columns[i_col-1]
+                namex = pca_dataframe_sig.columns[i_col-1]
                 for i_col2 in range(1,n_pca+1):
                         if i_col2>i_col:
-                                namey = pca_dataframe.columns[i_col2-1]
+                                namey = pca_dataframe_sig.columns[i_col2-1]
                                 padSc = plt.subplot(rows,cols,index)
-                                color=""
-                                if name=="Signal":
-                                        color+="red"
-                                elif name=="Background":
-                                        color="blue"
-                                plt.scatter(pca_dataframe[namex],pca_dataframe[namey],s=3,c=color,marker="o",alpha=0.3)
+                                plt.scatter(pca_dataframe_sig[namex],pca_dataframe_sig[namey],s=3,c="red",marker="o",alpha=0.3)
+                                plt.scatter(pca_dataframe_bkg[namex],pca_dataframe_bkg[namey],s=3,c="blue",marker="o",alpha=0.3)
                                 padSc.set_xlabel(namex)
                                 padSc.set_ylabel(namey)
+                                padSc.legend(("signal","background"))
                                 index += 1
                                 #padSc.set_title("Pearson corr. %f"%np.corrcoef(pca_dataframe[namex],pca_dataframe[namey])[0,1])
                         else:
                                 continue
-        plt.subplots_adjust(hspace=0.75,wspace=0.75)
-        #plt.show()
+        plt.subplots_adjust(hspace=0.5,wspace=0.5)
         
-        path="./%s/PCA"%name
+        path="./PCA/%d"%n_pca
         CheckDir(path)
         plt.savefig(path+"/%d.png"%n_pca, bbox_inches="tight")   
              
         if dohistbool>0:
-                DoCorrMatrix(pca_dataframe,None,"pca_%s"%name,path)
-                DoHist(pca.explained_variance_ratio_,name,path)
-        #plt.show()
+                DoCorrMatrix(pca_dataframe_sig,None,"pca_signal",path)
+                DoCorrMatrix(pca_dataframe_bkg,None,"pca_background",path)
+                DoHist(Sig_pca_stuff[1].explained_variance_ratio_,Bkg_pca_stuff[1].explained_variance_ratio_,path)
 #__________________________________________________________________________________
-def DoHist(array,name,path):
+def DoHist(array_sig,array_bkg,path):
         figVarRat = plt.figure(figsize=(15,15))
-        figVarRat.suptitle(name,fontsize=40)
+        
+        figVarRat.suptitle("sig: %.4f, bkg: %.4f"%(DoListSum(array_sig),DoListSum(array_bkg)),fontsize=40)
         pad = plt.subplot(1,1,1)
-        position = range(1,len(array)+1)
-        col=""
-        if name=="Signal":
-                col+="red"
-        elif name=="Background":
-                col="blue"
-        plt.bar(position,array,color=col)
+        position_sig = [float(i) for i in frange(0.8,len(array_sig)+1-0.2,1)]
+        position_bkg = [float(j) for j in frange(1.2,len(array_bkg)+1+0.2,1)]
+        plt.bar(x=position_sig,height=array_sig,width=0.4,color="red")
+        plt.bar(x=position_bkg,height=array_bkg,width=0.4,color="blue")
+        pad.xaxis.set_ticks(range(0,len(position_sig)+1))
         pad.set_xlabel("principal component",fontsize=20)
         pad.set_ylabel("explained variance ratio",fontsize=20)
         pad.set_ylim(0,0.3)
         pad.get_xaxis().set_tick_params(labelsize=20)
         pad.get_yaxis().set_tick_params(labelsize=20)
+        plt.legend(("signal","background"),fontsize=30)
         plt.savefig("%s/VarRat.png"%path)
 #__________________________________________________________________________________
 def GetRowCol(N):
@@ -176,7 +179,22 @@ def ScatterPlotsDefVar(mylistvariables,train_set_sig,train_set_bkg,path):
                         ProgressBar((i_col-1)*(num_variables_corr)+i_col2,(num_variables_corr)**2)
 
                         plt.savefig(path+"/scatter_%d.png"%i_col, bbox_inches="tight")
-
+#__________________________________________________________________________________
+def frange(start, stop, step):
+        i = float(start)
+        lst = []
+        while i < stop:
+                lst.append(i)
+                i += step
+        return lst
+#__________________________________________________________________________________
+def DoListSum(lst):
+        n_Var = len(lst)
+        lst_sum = 0
+        for i in range(0,n_Var):
+                lst_sum += lst[i]
+        return lst_sum
+        
 
 
 

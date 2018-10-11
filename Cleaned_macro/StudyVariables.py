@@ -23,6 +23,7 @@ import Functions as func     # user defined functions
 
 time0 = datetime.now()
 SaveScatterPlots = sys.argv[1]
+n_pca_variables  = int(sys.argv[2])
 
 # check if there are the directories where to save the files, otherwise create them
 path_Sig = "./Signal"
@@ -40,6 +41,7 @@ train_set_bkg=train_set.loc[train_set['signal_ML'] == 0]
 #   Variable distribution plots
 #==================================
 print("\n--- Standard variables distributions ... ",end="")
+sys.stdout.flush()
 figure = plt.figure(figsize=(18,15))
 figure.suptitle('Variables distributions', fontsize=40)
 num_variables = len(train_set_sig.columns)
@@ -56,15 +58,18 @@ for i_subpad in range(1,num_variables):                 # NB: the last variable 
 plt.subplots_adjust(hspace=0.5)
 plt.savefig("Var_distributions.pdf")
 print("DONE")
+sys.stdout.flush()
 
 #========================
 #   Correlation matrix
 #========================
 print("--- Correlation matrix of standard variables ... ",end="")
-c_type = 'pearson'      # kind of correlation coefficients: pearson, kendall, spearman
+sys.stdout.flush()
+c_type = 'pearson'      # kinds of correlation coefficients: pearson, kendall, spearman
 func.DoCorrMatrix(train_set_sig,100,"signal",path_Sig,c_type)
 func.DoCorrMatrix(train_set_bkg,101,"background",path_Bkg,c_type)
 print("DONE")
+sys.stdout.flush()
 
 #============================================
 #   Scatter plots among standard variables
@@ -78,9 +83,14 @@ if SaveScatterPlots == "True":
 #   Dimentional reduction with principal components
 #=====================================================
 print("--- Principal components extraction ... ",end="")
-func.DimReduction(train_set_sig,mylistvariables,len(mylistvariables),func.NComb(len(mylistvariables)),"Signal")
-func.DimReduction(train_set_bkg,mylistvariables,len(mylistvariables),func.NComb(len(mylistvariables)),"Background")
+sys.stdout.flush()
+
+if n_pca_variables>len(mylistvariables):
+        n_pca_variables = len(mylistvariables)
+
+func.DimReduction(train_set_sig,train_set_bkg,mylistvariables,n_pca_variables,func.NComb(len(mylistvariables)))
 print("DONE")
+sys.stdout.flush()
 
 time1 = datetime.now()
 howmuchtime = time1-time0
