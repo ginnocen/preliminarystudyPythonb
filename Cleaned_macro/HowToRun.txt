@@ -3,5 +3,11 @@
 =========================================
 To run this code, give the following parameters:
         - path of the file to be read
+        - species of the D meson to be analysed (D0, Ds, Dplus)
+        - pT min (GeV/c)
+        - pT max (GeV/c)
         - True/False if you want/do not want to produce scatter plots for default variables
         - pass a number, corresponding to the number of principal components you want to reduce the system to
+
+Example of woring command (run it on the shell): python3 StudyVariables.py ../testsample.pkl Ds 0.0 100.0 False 5
+        ---> it considers the analysis for Ds of pT from 0 to 100 GeV/c, without plotting all the scatter plots for the standard variables (False) and making a dimentional reduction to 5 principal components

@@ -61,17 +61,21 @@ def GetPCADataFrame(dataframe,varlist,n_pca):
         
         pca_name_list = []
         for i_pca in range(1,n_pca+1):
-                pca_name_list.append("Princ. comp. %d"%i_pca)
+                pca_name_list.append("princ_comp_%d"%i_pca)
 
         pca_dataframe = pd.DataFrame(data=principalComponent,columns=pca_name_list)
         return (pca_dataframe,pca)
 #__________________________________________________________________________________
-def DimReduction(dataframe_sig,dataframe_bkg,varlist,n_pca,n_cases,dohistbool=True):
+def DimReduction(dataframe_sig,dataframe_bkg,Dtype,pt_min,pt_max,varlist,n_pca,n_cases,dohistbool=True):
 
         Sig_pca_stuff = GetPCADataFrame(dataframe_sig,varlist,n_pca)
         Bkg_pca_stuff = GetPCADataFrame(dataframe_bkg,varlist,n_pca)
         pca_dataframe_sig = Sig_pca_stuff[0]
         pca_dataframe_bkg = Bkg_pca_stuff[0]
+
+        #print("\nPCA data frames")
+        #print("%s\nlen = %d\n"%(pca_dataframe_sig,len(pca_dataframe_sig)))
+        #print("%s\nlen = %d\n"%(pca_dataframe_bkg,len(pca_dataframe_bkg)))
 
         # do scatter plots on principal components
         pcaScatterFig = plt.figure(figsize=(40,40))
@@ -97,14 +101,20 @@ def DimReduction(dataframe_sig,dataframe_bkg,varlist,n_pca,n_cases,dohistbool=Tr
                                 continue
         plt.subplots_adjust(hspace=0.5,wspace=0.5)
         
-        path="./PCA/%d"%n_pca
+        path="./%s/%.1f_%.1f_GeV/PCA/%d"%(Dtype,pt_min,pt_max,n_pca)
         CheckDir(path)
-        plt.savefig(path+"/%d.png"%n_pca, bbox_inches="tight")   
+        plt.savefig(path+"/%d.png"%n_pca, bbox_inches="tight")  
+
+        # save pc DataFrames
+        pca_dataframe_sig.to_pickle("%s/df_pc_sig.py"%path)
+        pca_dataframe_bkg.to_pickle("%s/df_pc_bkg.py"%path) 
              
         if dohistbool>0:
                 DoCorrMatrix(pca_dataframe_sig,None,"pca_signal",path)
                 DoCorrMatrix(pca_dataframe_bkg,None,"pca_background",path)
                 DoHist(Sig_pca_stuff[1].explained_variance_ratio_,Bkg_pca_stuff[1].explained_variance_ratio_,path)
+
+        return (pca_dataframe_sig,pca_dataframe_bkg)
 #__________________________________________________________________________________
 def DoHist(array_sig,array_bkg,path):
         figVarRat = plt.figure(figsize=(15,15))
@@ -194,14 +204,35 @@ def DoListSum(lst):
         for i in range(0,n_Var):
                 lst_sum += lst[i]
         return lst_sum
-        
-
-
-
-
-
-
-
+#__________________________________________________________________________________
+def MergeDF(df_std_sig,df_std_bkg,df_pc_sig,df_pc_bkg,Dtype,pt_min,pt_max,n_pca):
+        # get original labels and give them to the new DataFrame
+        index_sig = df_std_sig.index.values
+        index_bkg = df_std_bkg.index.values
+        df_pc_sig.index = index_sig
+        df_pc_bkg.index = index_bkg
+        #print(df_pc_sig,"\n")
+        #print(df_pc_bkg)
+        # concatenate DataFrames to get the final ones for signal and background
+        final_df_sig = pd.concat([df_pc_sig,df_std_sig],axis=1)
+        final_df_bkg = pd.concat([df_pc_bkg,df_std_bkg],axis=1)
+        #print("\n\t*** Final DataFrames for signal and background ***\n")
+        #print(final_df_sig.columns)
+        #print(final_df_bkg.columns)
+        #print(final_df_sig)
+        #print(final_df_bkg,"\n")
+        # concatenate the last DataFrames to get the final one
+        final_df = pd.concat([final_df_sig,final_df_bkg])
+        #print("\n\t*** Final DataFrame ***\n")
+        #print(final_df)
+        # randomize row position
+        final_df_shuffled = final_df.iloc[np.random.permutation(len(final_df))]
+        #print("\n\t*** Final DataFrame shuffled***\n")
+        #print(final_df_shuffled)
+        # save
+        path="./%s/%.1f_%.1f_GeV/PCA/%d"%(Dtype,pt_min,pt_max,n_pca)
+        CheckDir(path)
+        final_df_shuffled.to_pickle("%s/training_df_%s_pc%d.py"%(path,Dtype,n_pca))
 
 
 
