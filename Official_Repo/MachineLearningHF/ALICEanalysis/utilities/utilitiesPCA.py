@@ -17,6 +17,36 @@ from sklearn.decomposition import PCA
 
 sys.path.insert(0, '../utilities')
 from utilitiesCorrelations import *
+from utilitiesGeneral import *
+
+def createinfoplot(array_sig,array_bkg,path):
+        position = np.arange(1,len(array_sig)+1,dtype = int)
+        list_info_sig = []
+        list_info_bkg = []
+        info_sig = 0
+        info_bkg = 0
+        for i in np.arange(len(position)):
+                info_sig += array_sig[i]
+                info_bkg += array_bkg[i]
+                list_info_sig.append(info_sig)
+                list_info_bkg.append(info_bkg)
+        arr_info_sig = np.array(list_info_sig)
+        arr_info_bkg = np.array(list_info_bkg)
+        #print(position)
+        #print(arr_info_sig)
+        #print(arr_info_bkg)   
+        infoplot = plt.figure(figsize=(20,20))
+        infopad = plt.subplot(1,1,1)
+        plt.plot(position,arr_info_sig,'-ro',markersize=15)        
+        plt.plot(position,arr_info_bkg,'-bo',markersize=15)
+        infopad.set_xlabel('number of principal components',fontsize=25)        
+        infopad.set_ylabel('total carried information',fontsize=25)
+        infopad.xaxis.set_tick_params(labelsize=25)
+        infopad.yaxis.set_tick_params(labelsize=25)
+        plt.rc('ytick',labelsize=25)
+        infopad.legend(("signal","background"),fontsize=50)
+        plt.grid()
+        plt.savefig(path+"/../carried_info.pdf")
 
 
 def dimreduction(path,dataframe_sig,dataframe_bkg,varlist,n_pca,n_cases,dohistbool=True):
@@ -68,11 +98,16 @@ def dimreduction(path,dataframe_sig,dataframe_bkg,varlist,n_pca,n_cases,dohistbo
                 docorrmatrix(pca_dataframe_bkg,None,"pca_background",path_pca)
                 print("DONE")
                 sys.stdout.flush()
-                dohist(Sig_pca_stuff[1].explained_variance_ratio_,Bkg_pca_stuff[1].explained_variance_ratio_,path_pca)
+
+                bool_doinfoplot = False
+                if len(varlist)==n_pca:
+                        doinfoplot = True
+
+                dohist(Sig_pca_stuff[1].explained_variance_ratio_,Bkg_pca_stuff[1].explained_variance_ratio_,path_pca,doinfoplot)
         print("     DONE")
         return (pca_dataframe_sig,pca_dataframe_bkg)
 
-def dohist(array_sig,array_bkg,path):
+def dohist(array_sig,array_bkg,path,doinfoplot):
         sys.stdout.flush()
         print("\t... dohist ... ",end="")
         figVarRat = plt.figure(figsize=(15,15))
@@ -91,36 +126,11 @@ def dohist(array_sig,array_bkg,path):
         pad.get_yaxis().set_tick_params(labelsize=20)
         plt.legend(("signal","background"),fontsize=30)
         plt.savefig("%s/VarRat.png"%path)
+
+        if doinfoplot:
+                createinfoplot(array_sig,array_bkg,path)
+        
         print("DONE")
-
-
-def dolistsum(lst):
-        n_Var = len(lst)
-        lst_sum = 0
-        for i in range(0,n_Var):
-                lst_sum += lst[i]
-        return lst_sum
-
-
-def factorial(n):
-        m = n-1
-        result = n
-        while m>1:
-                result *= m
-                m -= 1
-        if n<2:
-                result = 1
-        return result
-
-
-def frange(start, stop, step):
-        i = float(start)
-        lst = []
-        while i < stop:
-                lst.append(i)
-                i += step
-        return lst
-
 
 def getPCAdataframe(dataframe,varlist,n_pca):
         data        = dataframe.loc[:,varlist]                          # get the dataframe with only the variables in 'varlist' 
@@ -136,21 +146,6 @@ def getPCAdataframe(dataframe,varlist,n_pca):
 
         pca_dataframe = pd.DataFrame(data=principalComponent,columns=pca_name_list)
         return (pca_dataframe,pca)
-
-
-def getrowcol(N):
-        rowcol = []
-        row = int(math.sqrt(N))
-        col = N//row
-        if N%row>0:
-                col += 1
-        rowcol.append(row)
-        rowcol.append(col)
-        return rowcol
-
-
-def ncomb(n):
-        return factorial(n)//( factorial(2)*factorial(n-2) )
 
 
 def mergedf(path,df_std_sig,df_std_bkg,df_pc_sig,df_pc_bkg,Dtype,n_pca):
