@@ -101,7 +101,7 @@ sys.stdout.flush()
 if n_pca_variables>len(mylistvariables):
         n_pca_variables = len(mylistvariables)
 
-pca_df = func.DimReduction(train_set_sig,train_set_bkg,D_species,pt_min,pt_max,mylistvariables,n_pca_variables,func.NComb(len(mylistvariables)))
+pca_df = func.DimReduction(train_set_sig,train_set_bkg,D_species,pt_min,pt_max,mylistvariables,n_pca_variables,func.NComb(n_pca_variables))
 print("DONE")
 sys.stdout.flush()
 

@@ -78,12 +78,13 @@ def DimReduction(dataframe_sig,dataframe_bkg,Dtype,pt_min,pt_max,varlist,n_pca,n
         #print("%s\nlen = %d\n"%(pca_dataframe_bkg,len(pca_dataframe_bkg)))
 
         # do scatter plots on principal components
-        pcaScatterFig = plt.figure(figsize=(40,40))
-        pcaScatterFig.suptitle("Dim. reduction  - %d principal components"%n_pca,fontsize=75,)
+        pcaScatterFig = plt.figure(figsize=(30,20))
+        pcaScatterFig.suptitle("Dim. reduction  - %d principal components"%n_pca,fontsize=40)
         index = 1
         rowscols = GetRowCol(n_cases)
         rows = rowscols[0]
         cols = rowscols[1]
+
         for i_col in range(1,n_pca+1):
                 namex = pca_dataframe_sig.columns[i_col-1]
                 for i_col2 in range(1,n_pca+1):
@@ -92,14 +93,14 @@ def DimReduction(dataframe_sig,dataframe_bkg,Dtype,pt_min,pt_max,varlist,n_pca,n
                                 padSc = plt.subplot(rows,cols,index)
                                 plt.scatter(pca_dataframe_sig[namex],pca_dataframe_sig[namey],s=3,c="red",marker="o",alpha=0.3)
                                 plt.scatter(pca_dataframe_bkg[namex],pca_dataframe_bkg[namey],s=3,c="blue",marker="o",alpha=0.3)
-                                padSc.set_xlabel(namex)
-                                padSc.set_ylabel(namey)
-                                padSc.legend(("signal","background"))
+                                padSc.set_xlabel(namex,fontsize = 20)
+                                padSc.set_ylabel(namey,fontsize = 20)
+                                padSc.legend(("signal","background"),fontsize=25)
                                 index += 1
                                 #padSc.set_title("Pearson corr. %f"%np.corrcoef(pca_dataframe[namex],pca_dataframe[namey])[0,1])
                         else:
                                 continue
-        plt.subplots_adjust(hspace=0.5,wspace=0.5)
+        #plt.subplots_adjust(hspace=0.5,wspace=0.5)
         
         path="./%s/%.1f_%.1f_GeV/PCA/%d"%(Dtype,pt_min,pt_max,n_pca)
         CheckDir(path)

@@ -36,7 +36,7 @@ train_set_sig, train_set_bkg = gettrainingset(filename,D_species,pt_min,pt_max,p
 mylistvariables = getlistvar()          # later we shall define a function that receives the type of D-meson as argument
 
 ############# PCA and dimentional reduction ############
-pca_df = dimreduction(path,train_set_sig,train_set_bkg,mylistvariables,n_pca_variables,ncomb(len(mylistvariables)))
+pca_df = dimreduction(path,train_set_sig,train_set_bkg,mylistvariables,n_pca_variables,ncomb(n_pca_variables))
 
 ##### merging standard variables and pc DataFrames #####
 mergedf(path_out,train_set_sig,train_set_bkg,pca_df[0],pca_df[1],D_species,n_pca_variables)

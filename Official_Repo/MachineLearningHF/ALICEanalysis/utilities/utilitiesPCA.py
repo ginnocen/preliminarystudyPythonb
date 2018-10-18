@@ -29,11 +29,11 @@ def dimreduction(path,dataframe_sig,dataframe_bkg,varlist,n_pca,n_cases,dohistbo
 
         # do scatter plots on principal components
         pcaScatterFig = plt.figure(figsize=(40,40))
-        pcaScatterFig.suptitle("Dim. reduction  - %d principal components"%n_pca,fontsize=75,)
+        #pcaScatterFig.suptitle("Dim. reduction  - %d principal components"%n_pca,fontsize=40)
         index = 1
         rowscols = getrowcol(n_cases)
-        rows = rowscols[0]
-        cols = rowscols[1]
+        rows = rowscols[1]
+        cols = rowscols[0]
         for i_col in range(1,n_pca+1):
                 namex = pca_dataframe_sig.columns[i_col-1]
                 for i_col2 in range(1,n_pca+1):
@@ -42,20 +42,20 @@ def dimreduction(path,dataframe_sig,dataframe_bkg,varlist,n_pca,n_cases,dohistbo
                                 padSc = plt.subplot(rows,cols,index)
                                 plt.scatter(pca_dataframe_sig[namex],pca_dataframe_sig[namey],s=3,c="red",marker="o",alpha=0.3)
                                 plt.scatter(pca_dataframe_bkg[namex],pca_dataframe_bkg[namey],s=3,c="blue",marker="o",alpha=0.3)
-                                padSc.set_xlabel(namex)
-                                padSc.set_ylabel(namey)
-                                padSc.legend(("signal","background"))
+                                padSc.set_xlabel(namex,fontsize=20)
+                                padSc.set_ylabel(namey,fontsize=20)
+                                padSc.legend(("signal","background"),fontsize=25)
                                 progressbar(index,n_cases)
                                 index += 1
                                 #padSc.set_title("Pearson corr. %f"%np.corrcoef(pca_dataframe[namex],pca_dataframe[namey])[0,1])
                         else:
                                 continue
-        plt.subplots_adjust(hspace=0.5,wspace=0.5)
+        #plt.subplots_adjust(hspace=0.5,wspace=0.5)
         sys.stdout.flush()
         
         path_pca="%s/PCA/%d"%(path,n_pca)
         checkdir(path_pca)
-        plt.savefig(path+"/%d.png"%n_pca, bbox_inches="tight")  
+        plt.savefig(path_pca+"/%d.png"%n_pca, bbox_inches="tight")  
 
         # save pc DataFrames
         pca_dataframe_sig.to_pickle("%s/df_pc_sig.py"%path_pca)
