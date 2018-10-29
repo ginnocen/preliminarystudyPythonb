@@ -1,0 +1,19 @@
+It seems that:
+  1) (from ..._highNest_highDepth.png)  by increasing in an exagerated way the number of estimators there is no gain (flat trend) 
+    ---> good values: 10 RandomForest; 2000 GradientBoostClassifier
+  2) (from ..._studyDepth1,2,3,4.png)
+      - RandomForest: when the depth is around 10 we basically find the optimal value, since with larger depths we basically flactuate around what we find with depth=10
+      - GradientBoostClassifier: the depth should be small (around 5)
+  3) (from ...-studyFeaturesLearnRate)  
+      - RandomForest: no clear trend, it seems that changing the number of features the situation does not change too much
+      - GradientBoostClassifier: only when the learning rate gets close to 1 (>=0.8) we get a biggest error
+
+---> Best estimator: (from ..._manyCases1,2,....png (code run with the same configuration of parameters))
+      - RandomForest:             {'max_depth': 16, 'max_features': 2, 'n_estimators': 50}     | {'max_depth': 10, 'max_features': 2, 'n_estimators': 100}   | {'max_depth': 16, 'max_features': 2, 'n_estimators': 50}     |
+                                  {'max_depth': 10, 'max_features': 2, 'n_estimators': 75}     | {'max_depth': 8, 'max_features': 2, 'n_estimators': 75}     | {'max_depth': 12, 'max_features': 2, 'n_estimators': 75}     |
+                                  {'max_depth': 10, 'max_features': 2, 'n_estimators': 75}     | {'max_depth': 12, 'max_features': 2, 'n_estimators': 75}    | {'max_depth': 12, 'max_features': 2, 'n_estimators': 75}     |
+                                  {'max_depth': 16, 'max_features': 2, 'n_estimators': 100}
+      - GradientBoostClassifier:  {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 3000} | {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 500} | {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 500}  |
+                                  {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 500}  | {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 500} | {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 1750} |
+                                  {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 3000} | {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 750} | {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 2000} |
+                                  {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 3000}                          

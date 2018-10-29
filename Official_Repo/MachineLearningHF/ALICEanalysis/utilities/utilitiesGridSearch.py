@@ -28,6 +28,7 @@ def do_gridsearch(namesCV_,classifiersCV_,mylistvariables_,param_gridCV_,X_train
       print(np.sqrt(-mean_score), params)
     list_scores.append(pd.DataFrame(cvres)) # new part for info storing
     grid_search_best=grid_search.best_estimator_.fit(X_train_, y_train_)
+    print("\n--- Best parameters for %s:\n%s"%(nameCV,grid_search.best_params_))
     grid_search_models_.append(grid_search_model)
     grid_search_bests_.append(grid_search_best)
 
@@ -143,7 +144,7 @@ def perform_plot_gridsearch(names,scores,keys,changeparameter,output_,suffix_):
       lab="%s: %s, %s: %s"%(key[0],case[0],key[1],case[1])
       df_case.plot(x=change,y='mean_test_score',ax=pad,label=lab,marker='o')
       print(df_case)
-    pad.legend(fontsize=20)
+    pad.legend(fontsize=5)
     
   plotname=output_+"/GridSearchResults"+name+suffix_+".png"
   plt.savefig(plotname)

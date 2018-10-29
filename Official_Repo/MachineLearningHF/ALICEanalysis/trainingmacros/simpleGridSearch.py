@@ -44,7 +44,7 @@ y_test=test_set[myvariablesy]
 
 namesCV=["Random_Forest","GradientBoostingClassifier"]
 classifiersCV=[RandomForestClassifier(),GradientBoostingClassifier()]
-param_gridCV = [[{'n_estimators': [3, 10, 50, 100], 'max_features': [2,4,6,8],'max_depth': [1,4]}],[{'learning_rate': [0.01,0.05, 0.1], 'n_estimators': [1000, 2000, 5000],'max_depth' : [1, 2, 4]}]]
+param_gridCV = [[{'n_estimators': [4,6,8,10,12,14,25,50,75,100], 'max_features': [2,3,4,5,6,7,8,9],'max_depth': [4,8,10,12,16]}],[{'learning_rate': [0.025,0.05,0.075,0.1,0.2,0.3,0.4,0.5,0.6,0.7], 'n_estimators': [500,750,1000,1250,1500,1750,2000,2250,2500,2750,3000],'max_depth' : [3,4,5,6,7]}]]
 
 ncores=-1
 #grid_search_models,grid_search_bests=do_gridsearch(namesCV,classifiersCV,mylistvariables,param_gridCV,X_train,y_train,3,ncores)
