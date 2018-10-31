@@ -144,7 +144,7 @@ def perform_plot_gridsearch(names,scores,keys,changeparameter,output_,suffix_):
       lab="%s: %s, %s: %s"%(key[0],case[0],key[1],case[1])
       df_case.plot(x=change,y='mean_test_score',ax=pad,label=lab,marker='o')
       print(df_case)
-    pad.legend(fontsize=5)
+    pad.legend(fontsize=20)
     
   plotname=output_+"/GridSearchResults"+name+suffix_+".png"
   plt.savefig(plotname)

@@ -16,4 +16,11 @@ It seems that:
       - GradientBoostClassifier:  {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 3000} | {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 500} | {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 500}  |
                                   {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 500}  | {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 500} | {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 1750} |
                                   {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 3000} | {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 750} | {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 2000} |
-                                  {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 3000}                          
+                                  {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 3000}                  
+
+---> Let's try to use the performance code (from repository MachineLearningHF) in this case:
+      - RandomForest:             {'max_depth': 12, 'max_features': 2, 'n_estimators': 75}
+      - GradientBoostClassifier:  {'learning_rate': 0.2, 'max_depth': 5, 'n_estimators': 3000}    
+      ---> !!! OVERFITTING !!! ---> probably due to the low statistics involved in the training process
+
+
