@@ -18,7 +18,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import precision_recall_curve
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
-from utilitiesGeneral import checkdir
+from utilitiesGeneral import checkdir,progressbar
 
 
 def cross_validation_mse(names_,classifiers_,X_train_,y_train_,cv_,ncores):
@@ -116,26 +116,8 @@ def precision_recall(mylistvariables_,names_,classifiers_,suffix_,X_train,y_trai
   checkdir("plots")
   plotname='plots/precision_recall%s.png' % (suffix_)
   plt.savefig(plotname)
-  
-  figure2 = plt.figure(figsize=(20,15))
-  i=1
-  aucs = []
 
-  for name, clf in zip(names_, classifiers_):
-    y_proba = cross_val_predict(clf, X_train, y_train, cv=cv,method="predict_proba")
-    y_scores = y_proba[:, 1]
-    fpr, tpr, thresholds_forest = roc_curve(y_train,y_scores)
-    roc_auc = auc(fpr, tpr)
-    aucs.append(roc_auc)
-    plt.xlabel('False Positive Rate or (1 - Specifity)',fontsize=20)
-    plt.ylabel('True Positive Rate or (Sensitivity)',fontsize=20)
-    plt.title('Receiver Operating Characteristic',fontsize=20)
-    plt.plot(fpr, tpr, lw=1, alpha=0.3, label='ROC %s (AUC = %0.2f)' % (names_[i-1], roc_auc), linewidth=4.0)
-    plt.legend(loc="lower center",  prop={'size':18})
-    i += 1
-  plotname='plots/ROCcurve%s.png' % (suffix_)
-  plt.savefig(plotname)
-  
+  RoCcurves(names_,classifiers_,suffix_,X_train,y_train,cv)
 
 def plot_learning_curves(names_, classifiers_,suffix_,X,y,min=1,max=-1,step_=1):
   figure1 = plt.figure(figsize=(20,15))
@@ -163,4 +145,27 @@ def plot_learning_curves(names_, classifiers_,suffix_,X,y,min=1,max=-1,step_=1):
     plt.legend(loc="lower center",  prop={'size':18})
     i += 1
   plotname='plots/learning_curve%s.png' % (suffix_)
+  plt.savefig(plotname)
+
+# ---------- mfaggin ----------
+def RoCcurves(names_,classifiers_,suffix_,X_train,y_train,cv):
+  print("\n=== RoCcurves function ===")
+  figure2 = plt.figure(figsize=(20,15))
+  i=1
+  aucs = []
+  for name, clf in zip(names_, classifiers_):
+    y_proba = cross_val_predict(clf, X_train, y_train, cv=cv,method="predict_proba")
+    y_scores = y_proba[:, 1]
+    fpr, tpr, thresholds_forest = roc_curve(y_train,y_scores)
+    roc_auc = auc(fpr, tpr)
+    aucs.append(roc_auc)
+    plt.xlabel('False Positive Rate or (1 - Specifity)',fontsize=20)
+    plt.ylabel('True Positive Rate or (Sensitivity)',fontsize=20)
+    plt.title('Receiver Operating Characteristic',fontsize=20)
+    plt.plot(fpr, tpr, lw=1, alpha=0.3, label='ROC %s (AUC = %0.2f)' % (names_[i-1], roc_auc), linewidth=4.0)
+    plt.legend(loc="lower center",  prop={'size':18})
+    progressbar(i,len(classifiers_))
+    i += 1
+  print()
+  plotname='plots/ROCcurve%s.png' % (suffix_)
   plt.savefig(plotname)

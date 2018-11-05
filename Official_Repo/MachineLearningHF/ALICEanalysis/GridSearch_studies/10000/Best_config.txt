@@ -1,0 +1,5 @@
+--- Best parameters for Random_Forest:
+{'max_depth': 4, 'max_features': 2, 'n_estimators': 50}
+
+--- Best parameters for GradientBoostingClassifier:
+{'learning_rate': 0.05, 'max_depth': 4, 'n_estimators': 2000}

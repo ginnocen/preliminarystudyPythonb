@@ -17,7 +17,25 @@ from sklearn.ensemble import ExtraTreesClassifier
 from sklearn_evaluation import plot
 from sklearn.feature_extraction import DictVectorizer
 from matplotlib.colors import ListedColormap
-from utilitiesGeneral import checkdir
+from utilitiesGeneral import checkdir, progressbar
+
+# ------- mfaggin ------
+def getGradBoostclassifiers():
+  learn_rate   = [0.001,0.01,0.05]
+  n_estim      = [1000,10000,25000]
+  max_D    = [6]
+  classifiers = []
+  names = []
+  for i_lrate in range(0,len(learn_rate)):  # loop on learn_rate list
+    for i_est in range(0,len(n_estim)):  # loop on n_estim list
+      for i_maxD in range(0,len(max_D)):  # loop on max_D list
+        classifiers.append(GradientBoostingClassifier(learning_rate=learn_rate[i_lrate], n_estimators=n_estim[i_est], max_depth=max_D[i_maxD]))
+        names.append("GradBoost learn_rate: %s, n_estim: %s, max_D: %s"%(learn_rate[i_lrate],n_estim[i_est],max_D[i_maxD]))
+        print("GradBoost learn_rate: %s, n_estim: %s, max_D: %s"%(learn_rate[i_lrate],n_estim[i_est],max_D[i_maxD]))
+  print("# models: ",len(classifiers))
+  print("# names: ",len(names))
+  return classifiers, names
+#-----------------------
 
 def getclassifiers():
   classifiers = [GradientBoostingClassifier(learning_rate=0.01, n_estimators=2000, max_depth=1),

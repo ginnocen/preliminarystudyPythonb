@@ -13,6 +13,9 @@ from utilitiesCorrelations import scatterplot,correlationmatrix,vardistplot
 from utilitiesGeneral import filterdataframe_pt,splitdataframe_sigbkg,checkdir
 from utilitiesGridSearch import do_gridsearch,plot_gridsearch
 
+from utilitiesModels import getGradBoostclassifiers # mfaggin
+from utilitiesPerformance import RoCcurves  # mfaggin
+
 ############### this is the only place where you should change parameters ################
 optionClassification="Ds"
 neventspersample=10000
@@ -24,10 +27,12 @@ dotraining=0
 doimportance=0
 dotesting=0
 docrossvalidation=0
-doRoCLearning=1
+doRoCLearning=0
 doBoundary=0
 doBinarySearch=0
 ncores=-1
+
+doRoCLearningGradBoostClass=1     # mfaggin
 
 ##########################################################################################
 # var_pt="pt_cand_ML"
@@ -107,4 +112,8 @@ if (doBinarySearch==1):
   savemodels(names,grid_search_models,"output","GridSearchCV"+suffix)
   plot_gridsearch(namesCV,changeparameter,grid_search_models,"plots",suffix)
 
-
+if (doRoCLearningGradBoostClass==1):  # mfaggin
+  classifiers_GradBoost, names_GradBoost = getGradBoostclassifiers()
+  suffix+="GradBoost"
+  #precision_recall(mylistvariables,names_GradBoost,classifiers_GradBoost,suffix,X_train,y_train,5)
+  RoCcurves(names_GradBoost,classifiers_GradBoost,suffix,X_train,y_train,5)
