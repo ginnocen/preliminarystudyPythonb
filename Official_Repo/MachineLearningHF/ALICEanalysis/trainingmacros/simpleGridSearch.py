@@ -48,6 +48,10 @@ classifiersCV=[RandomForestClassifier(),GradientBoostingClassifier()]
 #param_gridCV = [[{'n_estimators': [50], 'max_features': [2],'max_depth': [4]}],[{'learning_rate': [0.03,0.04,0.05,0.06,0.07], 'n_estimators': [1000,2000,3000],'max_depth' : [4]}]]
 #param_gridCV = [[{'n_estimators': [50], 'max_features': [2],'max_depth': [4]}],[{'learning_rate': [0.05], 'n_estimators': [1000,2000,3000],'max_depth' : [4,5,6,7,8,9,10,20,50,100]}]]
 param_gridCV = [[{'n_estimators': [50], 'max_features': [2],'max_depth': [4]}],[{'learning_rate': [0.05], 'n_estimators': [1000,2000,3000],'max_depth' : [2,4,6,8,10,12,14,16,18,20]}]]
+#param_gridCV = [[{'n_estimators': [50], 'max_features': [2],'max_depth': [4]}],[{'learning_rate': [0.03,0.05,0.07], 'n_estimators': [500,2000,4000,8000],'max_depth' : [4]}]]
+#param_gridCV = [[{'n_estimators': [50], 'max_features': [2],'max_depth': [4]}],[{'learning_rate': [0.01,0.04,0.08,0.1], 'n_estimators': [1000,2000,4000,8000],'max_depth' : [6]}]]
+#param_gridCV = [[{'n_estimators': [50], 'max_features': [2],'max_depth': [4]}],[{'learning_rate': [0.01], 'n_estimators': [1000,2000,4000,8000],'max_depth' : [1,10,50]}]]
+#param_gridCV = [[{'n_estimators': [50], 'max_features': [2],'max_depth': [4]}],[{'learning_rate': [0.01,0.05,0.1], 'n_estimators': [1000,2000,4000,8000],'max_depth' : [6,8,10,12,14]}]]
 
 ncores=-1
 #grid_search_models,grid_search_bests=do_gridsearch(namesCV,classifiersCV,mylistvariables,param_gridCV,X_train,y_train,3,ncores)

@@ -21,9 +21,9 @@ from utilitiesGeneral import checkdir, progressbar
 
 # ------- mfaggin ------
 def getGradBoostclassifiers():
-  learn_rate   = [0.001,0.01,0.05]
-  n_estim      = [1000,10000,25000]
-  max_D    = [6]
+  learn_rate   = [0.1,0.14,0.18,0.22,0.26,0.3]
+  n_estim      = [250,750,1250,1500]
+  max_D    = [4]
   classifiers = []
   names = []
   for i_lrate in range(0,len(learn_rate)):  # loop on learn_rate list
