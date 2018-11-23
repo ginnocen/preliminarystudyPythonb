@@ -10,9 +10,9 @@ import pickle
 import sys, os
 from timeit import default_timer as timer
 from datetime import datetime
-#from ROOT import TNtuple
-#from ROOT import TH1F, TH2F, TCanvas, TFile, gStyle, gROOT
-#import uproot
+from ROOT import TNtuple
+from ROOT import TH1F, TH2F, TCanvas, TFile, gStyle, gROOT
+import uproot
 
 import sys
 sys.path.insert(0, '../utilities')
@@ -42,6 +42,7 @@ X_test= test_set[mylistvariables]
 X_test_others=test_set[mylistvariablesothers]
 y_test=test_set[myvariablesy]
 
+'''
 namesCV=["Random_Forest","GradientBoostingClassifier"]
 classifiersCV=[RandomForestClassifier(),GradientBoostingClassifier()]
 #param_gridCV = [[{'n_estimators': [50], 'max_features': [2],'max_depth': [4]}],[{'learning_rate': [0.03,0.04,0.05,0.06,0.07], 'n_estimators': [1000,2000,3000],'max_depth' : [3,4,5]}]]
@@ -53,14 +54,26 @@ param_gridCV = [[{'n_estimators': [50], 'max_features': [2],'max_depth': [4]}],[
 #param_gridCV = [[{'n_estimators': [50], 'max_features': [2],'max_depth': [4]}],[{'learning_rate': [0.01], 'n_estimators': [1000,2000,4000,8000],'max_depth' : [1,10,50]}]]
 #param_gridCV = [[{'n_estimators': [50], 'max_features': [2],'max_depth': [4]}],[{'learning_rate': [0.01,0.05,0.1], 'n_estimators': [1000,2000,4000,8000],'max_depth' : [6,8,10,12,14]}]]
 
+keys = [["param_max_features", "param_max_depth","param_n_estimators"] , ["param_learning_rate","param_max_depth","param_n_estimators"]]
+changeparameter=["param_n_estimators","param_n_estimators"]
+'''
+
+namesCV=["AdaBoost","GradientBoostingClassifier"]
+classifiersCV=[AdaBoostClassifier(),GradientBoostingClassifier()]
+param_gridCV = [[{'n_estimators': [10000,20000,30000]}],[{'learning_rate': [0.05], 'n_estimators': [1000,2000,3000],'max_depth' : [4]}]]
+
+
+keys = [["param_n_estimators"], ["param_learning_rate","param_max_depth","param_n_estimators"]]
+changeparameter=["param_n_estimators","param_n_estimators"]
+
 ncores=-1
 #grid_search_models,grid_search_bests=do_gridsearch(namesCV,classifiersCV,mylistvariables,param_gridCV,X_train,y_train,3,ncores)
 grid_search_models,grid_search_bests,dfscore=do_gridsearch(namesCV,classifiersCV,mylistvariables,param_gridCV,X_train,y_train,3,ncores)
 savemodels(names,grid_search_models,"output","GridSearchCV"+suffix)
-changeparameter=["param_n_estimators","param_n_estimators"]
 
+exit()
 #plot_gridsearch(namesCV,changeparameter,grid_search_models,"plots",suffix)
-keys = [["param_max_features", "param_max_depth","param_n_estimators"] , ["param_learning_rate","param_max_depth","param_n_estimators"]]
+
 perform_plot_gridsearch(namesCV,dfscore,keys,changeparameter,"plots",suffix)
 
 ###################### training sequence ######################
