@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/home/mattia/ROOT6_sources/build_dir/include",
+                "/home/mattia/ROOT6_sources/build_dir/lib",
+                "/home/mattia/Documenti/PhD/MachineLearningHF/ALICEanalysis/code/utilities"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64"
+        }
+    ],
+    "version": 4
+}

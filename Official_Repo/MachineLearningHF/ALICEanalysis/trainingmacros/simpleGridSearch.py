@@ -22,7 +22,7 @@ from utilitiesGridSearch import *
 
 time0 = datetime.now()
 
-neventspersample=10000
+neventspersample=1000
 classifiers, names=getclassifiers()
 mylistvariables=getvariablestraining()
 mylistvariablesothers=getvariablesothers()
@@ -58,20 +58,19 @@ keys = [["param_max_features", "param_max_depth","param_n_estimators"] , ["param
 changeparameter=["param_n_estimators","param_n_estimators"]
 '''
 
-namesCV=["AdaBoost","GradientBoostingClassifier"]
-classifiersCV=[AdaBoostClassifier(),GradientBoostingClassifier()]
-param_gridCV = [[{'n_estimators': [10000,20000,30000]}],[{'learning_rate': [0.05], 'n_estimators': [1000,2000,3000],'max_depth' : [4]}]]
+namesCV=["AdaBoost","RandomForest","GradientBoostingClassifier"]
+classifiersCV=[AdaBoostClassifier(),RandomForestClassifier(),GradientBoostingClassifier()]
+param_gridCV = [[{'n_estimators':[100,200,300],'learning_rate':[0.1,0.5,0.9]}],[{'n_estimators': [100,200,300], 'max_features': [3],'max_depth': [4]}],[{'learning_rate': [0.05], 'n_estimators': [1000,2000,3000],'max_depth' : [4]}]]
 
 
-keys = [["param_n_estimators"], ["param_learning_rate","param_max_depth","param_n_estimators"]]
-changeparameter=["param_n_estimators","param_n_estimators"]
+keys = [['param_n_estimators','param_learning_rate'],["param_max_features", "param_max_depth","param_n_estimators"], ["param_learning_rate","param_max_depth","param_n_estimators"]]
+changeparameter=["param_n_estimators","param_n_estimators","param_n_estimators"]
 
 ncores=-1
 #grid_search_models,grid_search_bests=do_gridsearch(namesCV,classifiersCV,mylistvariables,param_gridCV,X_train,y_train,3,ncores)
 grid_search_models,grid_search_bests,dfscore=do_gridsearch(namesCV,classifiersCV,mylistvariables,param_gridCV,X_train,y_train,3,ncores)
 savemodels(names,grid_search_models,"output","GridSearchCV"+suffix)
 
-exit()
 #plot_gridsearch(namesCV,changeparameter,grid_search_models,"plots",suffix)
 
 perform_plot_gridsearch(namesCV,dfscore,keys,changeparameter,"plots",suffix)
